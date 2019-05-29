@@ -3,9 +3,13 @@ Param(
     [string]$OutCSV = $(throw "-OutCSV is required.")
 )
 
-Import-CSV $UserCSV | `
-Get-Mailbox -Identity $_.User | `
-Get-MailboxStatistics | `
-Select-Object DisplayName, @{name=”TotalItemSize (GB)”;expression={[math]::Round((($_.TotalItemSize.Value.ToString()).Split(“(“)[1].Split(” “)[0].Replace(“,”,””)/1GB),2)}},ItemCount | `
-Sort “TotalItemSize (GB)” -Descending | `
-Export-CSV $OutCSV
+$Users = Import-CSV $UserCSV 
+$SizingDump = @()
+
+ForEach ($User in $Users) {
+    $UserSizing = Get-Mailbox -Identity $($User.User) | Get-MailboxStatistics | `
+    Select-Object DisplayName, @{name=”TotalItemSize (GB)”;expression={[math]::Round((($_.TotalItemSize.Value.ToString()).Split(“(“)[1].Split(” “)[0].Replace(“,”,””)/1GB),2)}},ItemCount
+    $SizingDump += $UserSizing
+}
+
+$SizingDump | Out-File $OutCSV
