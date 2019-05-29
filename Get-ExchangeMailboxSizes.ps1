@@ -15,4 +15,4 @@ ForEach ($User in $Users) {
     $SizingDump += $UserSizing
 }
 
-$SizingDump | Out-File $OutCSV
+$SizingDump | Export-CSV $OutCSV
